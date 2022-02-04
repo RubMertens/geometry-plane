@@ -23,9 +23,12 @@ const camera = new PerspectiveCamera(75, aspect, 0.01, 1000)
 camera.position.set(0, 0, 15)
 camera.lookAt(0, 0, 0)
 
-const light = new DirectionalLight('white', 1)
-light.position.set(0, 100, 100)
-scene.add(light)
+const frontLight = new DirectionalLight('white', 1)
+frontLight.position.set(0, 100, 100)
+const backLight = new DirectionalLight('white', 1)
+backLight.position.set(0, -100, -100)
+scene.add(frontLight)
+scene.add(backLight)
 
 const planeParams = {
   width: 70,
@@ -88,6 +91,8 @@ renderer.setPixelRatio(window.devicePixelRatio)
 
 const controls = new OrbitControls(camera, renderer.domElement)
 controls.enablePan = false
+controls.enableZoom = false
+controls.rotateSpeed = 0.1
 
 document.body.appendChild(renderer.domElement)
 
@@ -100,9 +105,9 @@ function regeneratePlane() {
 
 const rayCaster = new Raycaster()
 
-addEventListener('mousemove', (e) => {
-  const x = (e.clientX / window.innerWidth) * 2 - 1
-  const y = -(e.clientY / window.innerHeight) * 2 + 1
+const glowTraceOnMouseEvent = (rawCoords: { clientX: number; clientY: number }) => {
+  const x = (rawCoords.clientX / window.innerWidth) * 2 - 1
+  const y = -(rawCoords.clientY / window.innerHeight) * 2 + 1
 
   rayCaster.setFromCamera({ x, y }, camera)
   const intersections = rayCaster.intersectObject(plane.mesh)
@@ -143,6 +148,13 @@ addEventListener('mousemove', (e) => {
       },
     })
   }
+}
+
+addEventListener('mousemove', (e) => {
+  glowTraceOnMouseEvent(e)
+})
+addEventListener('touchmove', (e) => {
+  glowTraceOnMouseEvent(e.touches[0])
 })
 
 addEventListener('resize', () => {
